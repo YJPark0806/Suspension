@@ -1,0 +1,79 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# VSCode settings
+.vscode/
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.ds_store
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code project settings
+.vscode/
+
+# PyCharm project files
+.idea/
+
+# Anaconda environments
+*.conda
+*.env
+
+# Local config
+*.local
+
+# MuJoCo model outputs (예시)
+models/scenes/scene_*.xml
+models/scenes/scene_*.mjb
+*.log
+*.out
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# 기타 무거운 로그/결과/랜덤파일
+*.tmp
+*.swp
+*.bak
+*.old
+*.stl

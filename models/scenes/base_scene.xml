@@ -1,0 +1,18 @@
+<mujoco model="base_scene">
+    <compiler angle="degree" coordinate="local"/>
+    <option gravity="0 0 -9.81" integrator="RK4" timestep="0.001"/>
+
+    <include file="../vehicle/vehicle_model.xml"/>
+
+    <!-- ✅bump mesh가 asset 태그에 추가됨  -->
+    <asset>
+    </asset>
+
+    <worldbody>
+        <geom name="ground" type="plane" size="10 10 0.1" rgba="0.5 0.5 0.5 1"/>
+
+        <!-- ✅ 차량 소환 위치 지정 -->
+        <body name="vehicle" pos="0 0 0" >
+        </body>
+    </worldbody>
+</mujoco>
