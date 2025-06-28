@@ -1,12 +1,13 @@
 # scripts/VehicleEnv.py
 
+import os
 import numpy as np
 from gym import utils
 from gym.envs.mujoco import MujocoEnv
 
 from config import VehicleEnvConfig
 from utils import PIDController, compose_control, compute_suspension_forces
-from utils import get_scene_path, get_dual_lidar_scan
+from utils import get_dual_lidar_scan
 
 class VehicleEnv(MujocoEnv, utils.EzPickle):
 
@@ -25,7 +26,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.config = config
         
         observation_space = config.observation_space
-        xml_path = get_scene_path(scene_path=None, scene_dir=config.scene_dir) # default : 최신 시나리오 로드
+        xml_path = os.path.abspath("models/scenes/new_scene.xml")
 
         MujocoEnv.__init__(self, 
                            xml_path, 

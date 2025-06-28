@@ -1,18 +1,15 @@
 # scripts/setup.py
 
-from config import BumpConfig, SceneConfig
-from utils import add_bumps, generate_random_bumps, save_bumps
+from utils import create_new_scene
+from config.bump_config import BumpConfig
 from pathlib import Path
 
 def main():
     # Config 설정
-    scene_cfg = SceneConfig()
     bump_cfg = BumpConfig()
 
     # Bump 생성 
-    bumps = generate_random_bumps(bump_cfg.to_dict())
-    save_bumps(bumps, scene_cfg.bump_dir)
-    add_bumps(scene_cfg, bump_cfg)
+    create_new_scene("models/scenes/base_scene.xml", "models/scenes/new_scene.xml", bump_cfg)
 
 if __name__ == "__main__":
     main()

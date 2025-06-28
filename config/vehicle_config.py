@@ -1,11 +1,9 @@
 # config/vehicle_config.py
 
 from dataclasses import dataclass, field
-from pathlib import Path
 from gym.spaces import Box
 import numpy as np
 
-from config.scene_config import DEFAULT_SCENE_CONFIG
 
 DEFAULT_OBSERVATION_SPACE = Box(
     low=-np.inf,
@@ -23,8 +21,6 @@ class PIDConfig:
 
 @dataclass
 class VehicleEnvConfig:
-
-    scene_dir: Path = DEFAULT_SCENE_CONFIG.scene_dir
 
     frame_skip: int = 5
     observation_space: Box = DEFAULT_OBSERVATION_SPACE
