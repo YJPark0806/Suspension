@@ -26,7 +26,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.config = config
         
         observation_space = config.observation_space
-        xml_path = os.path.abspath("models/scenes/new_scene.xml")
+        xml_path = os.path.abspath("models/scenes/test_scene.xml")
 
         MujocoEnv.__init__(self, 
                            xml_path, 
@@ -60,10 +60,12 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
         controls = compose_control(speed_ctrl, steer_ctrl, susp_forces)
 
+        print("-"*100)
+        print(f"speed_err: {speed_err}\nsteer_err: {steer_err}")
+        print(f"speed_ctrl: {speed_ctrl}\nsteer_ctrl: {steer_ctrl}\nsusp_forces: {susp_forces}")
+
         if self.config.use_lidar:
-            lidar = get_dual_lidar_scan(self.model, self.data, ("lidar_left", "lidar_right"), num_rays=32)
-            print("LiDAR left:", np.round(lidar[0], 2))
-            print("LiDAR right:", np.round(lidar[1], 2))
+            self.lidar = get_dual_lidar_scan(self.model, self.data, ("lidar_left", "lidar_right"), num_rays=32)
 
         self.data.ctrl[:] = controls
 
@@ -75,9 +77,26 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
         info = {}
 
+        # print("-"*100)
+        # print("Stepping...")
+        # print("-"*100)
+        # print(f"self.data.qpos: {self.data.qpos}")
+        # print(f"self.data.qvel: {self.data.qvel}")
+        # print(f"self.data.qacc: {self.data.qacc}")
+        # print(f"self.data.ctrl: {self.data.ctrl}")
+        # print("self.data.sensordata:", self.data.sensordata)
+        # print(f"self.lidar: {self.lidar}")
+        # print(f"obs: {obs}")
+        # print(f"reward: {reward}")
+        # print(f"done: {done}")
+        # print(f"info: {info}")
+
         return obs, reward, done, info
 
     def reset_model(self):
+        print("-"*100)  
+        print("Resetting model...")
+        print("-"*100)
         print("Before reset, init_qvel:", self.config.init_qvel)
         init_qpos = self.config.init_qpos.copy()
         init_qvel = self.config.init_qvel.copy()
@@ -87,7 +106,6 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.speed_pid.reset()
         self.steer_pid.reset()
         return self._get_obs()
-
     
     def viewer_setup(self): 
         assert self.viewer is not None

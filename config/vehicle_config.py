@@ -32,7 +32,7 @@ class VehicleEnvConfig:
         default_factory=lambda: np.zeros(13)
     )
 
-    speed_pid: PIDConfig = PIDConfig(kp=150.0, ki=1.0, kd=10.0, output_limits=(-500, 500))
+    speed_pid: PIDConfig = PIDConfig(kp=150.0, ki=1.0, kd=10.0, output_limits=(-2000, 2000))
     steer_pid: PIDConfig = PIDConfig(kp=50.0, ki=0.1, kd=5.0, output_limits=(-1, 1))
 
     target_speed: float = 30 / 3.6  # 30 km/h in m/s
