@@ -31,7 +31,7 @@ def main():
         done = False
         step_count = 0
         while not done and viewer.is_running():
-            action = [env.target_speed, env.target_steer, 0, 0, 0, 0]
+            action = [0, 0, 0, 0]
             obs, reward, done, info = env.step(action)
 
             vel_log.append(env.data.qvel[0])

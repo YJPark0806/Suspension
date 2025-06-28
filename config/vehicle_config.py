@@ -46,6 +46,6 @@ class VehicleEnvConfig:
         self.init_qvel[0] = 0 / 3.6 # km/h -> m/s
 
         # 초기 위치(x, y, z) 직접 설정
-        self.init_qpos[:3] = np.array([-20.0, 0.0, 0.0])
+        self.init_qpos[:3] = np.array([-5.0, 0.0, 0.0])
         # 필요하면 초기 자세도 지정 가능 (예: 회전 쿼터니언 or euler 각)
         # self.init_qpos[3:7] = np.array([1, 0, 0, 0])  # 예시 (w, x, y, z)

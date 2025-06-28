@@ -49,15 +49,12 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
             self.data.qvel.flat,
         ])
 
-    def step(self, action): 
-        target_speed = action[0]
-        target_steer = action[1]
-        
-        speed_err = target_speed - self.data.qvel[0]
-        steer_err = target_steer - self.data.qpos[2] 
+    def step(self, action):         
+        speed_err = self.target_speed - self.data.qvel[0]
+        steer_err = self.target_steer - self.data.qpos[2] 
 
-        speed_ctrl = self.speed_pid(speed_err, self.dt)
-        steer_ctrl = self.steer_pid(steer_err, self.dt)
+        speed_ctrl = self.speed_pid(speed_err, self.sim_dt)
+        steer_ctrl = self.steer_pid(steer_err, self.sim_dt)
 
         susp_forces = compute_suspension_forces(action=action, state=self.data)
 
