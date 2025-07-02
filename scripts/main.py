@@ -41,7 +41,7 @@ def main():
         done = False
         step_count = 0
         while not done and viewer.is_running():
-            action = np.random.uniform(-500, 500, size=4)
+            action = np.random.uniform(0, 150, size=4)
             obs, reward, done, info = env.step(action)
 
             # 데이터 추출
