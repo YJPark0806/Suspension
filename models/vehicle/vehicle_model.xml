@@ -42,7 +42,7 @@
       <!-- Front Left Suspension & Wheel -->
       <body name="fl_susp" pos="1.55 1.65 0.0">
         <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
-        <joint name="fl_suspension" type="slide" axis="0 0 1" damping="1000"/>
+        <joint name="fl_suspension" type="slide" axis="0 0 1" damping="1000" range="-0.1 0.1"/>
         <body name="front_left_wheel" pos="0 0 -0.09">
           <joint name="fl_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
           <geom name="fl_geom" type="cylinder" size="0.3 0.09"
@@ -54,7 +54,7 @@
       <!-- Front Right Suspension & Wheel -->
       <body name="fr_susp" pos="1.55 -1.65 0.0">
         <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
-        <joint name="fr_suspension" type="slide" axis="0 0 1" damping="1000"/>
+        <joint name="fr_suspension" type="slide" axis="0 0 1" damping="1000" range="-0.1 0.1"/>
         <body name="front_right_wheel" pos="0 0 -0.09">
           <joint name="fr_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
           <geom name="fr_geom" type="cylinder" size="0.3 0.09"
@@ -66,7 +66,7 @@
       <!-- Rear Left Suspension & Wheel -->
       <body name="rl_susp" pos="-1.55 1.65 0.0">
         <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
-        <joint name="rl_suspension" type="slide" axis="0 0 1" damping="1000"/>
+        <joint name="rl_suspension" type="slide" axis="0 0 1" damping="1000" range="-0.1 0.1"/>
         <body name="rear_left_wheel" pos="0 0 -0.09">
           <joint name="rl_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
           <geom name="rl_geom" type="cylinder" size="0.3 0.09"
@@ -78,7 +78,7 @@
       <!-- Rear Right Suspension & Wheel -->
       <body name="rr_susp" pos="-1.55 -1.65 0.0">
         <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
-        <joint name="rr_suspension" type="slide" axis="0 0 1" damping="1000"/>
+        <joint name="rr_suspension" type="slide" axis="0 0 1" damping="1000" range="-0.1 0.1"/>
         <body name="rear_right_wheel" pos="0 0 -0.09">
           <joint name="rr_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
           <geom name="rr_geom" type="cylinder" size="0.3 0.09"

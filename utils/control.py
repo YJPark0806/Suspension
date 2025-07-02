@@ -2,33 +2,25 @@
 
 import numpy as np
 
-def compose_control(speed_ctrl, steer_ctrl, suspension_forces=None):
+def compose_control(speed_ctrl, suspension_forces):
     """
-    속도, 조향, 서스펜션 제어 신호를 10개 actuator 입력 배열로 변환
+    속도, 서스펜션 제어 신호를 8개 actuator 입력 배열로 변환
     """
     controls = []
-    # 1~4: 4개 바퀴 구동 모터
+
+    # 0~3: 4개 바퀴 구동 모터
     controls.append(speed_ctrl)  # fl_motor
     controls.append(speed_ctrl)  # fr_motor
     controls.append(speed_ctrl)  # rl_motor
     controls.append(speed_ctrl)  # rr_motor
 
-    # 5~6: 앞바퀴 독립 조향 (fl_steer, fr_steer)
-    controls.append(steer_ctrl)  # fl_steer
-    controls.append(steer_ctrl)  # fr_steer
-
-    # 7~10: 액티브 서스펜션 force (FL, FR, RL, RR)
-    if suspension_forces is not None:
-        # 길이 4가 아닐 경우 패딩/슬라이싱
-        forces = np.zeros(4)
-        n = min(len(suspension_forces), 4)
-        forces[:n] = suspension_forces[:n]
-        controls.extend(forces)
-    else:
-        controls.extend([0.0, 0.0, 0.0, 0.0])
+    # 4~7: 액티브 서스펜션 force (FL, FR, RL, RR)
+    forces = np.zeros(4)
+    n = min(len(suspension_forces), 4)
+    forces[:n] = suspension_forces[:n]
+    controls.extend(forces)
 
     return np.array(controls)
-
 
 
 def compute_reward(data, model):
@@ -48,20 +40,6 @@ def compute_reward(data, model):
     reward = speed_reward - stability_penalty
 
     return reward
-
-
-def check_done(data, model):
-    """
-    차량 주행 종료 조건 체크 예시
-    """
-    # 예: 차량이 bump를 충분히 지나갔거나 넘어졌다면 종료
-    pos_x = data.qpos[0]
-    bump_end_x = 15.0  # 예시 bump 끝 지점 위치 (config로 빼는 게 좋음)
-
-    if pos_x > bump_end_x:
-        return True
-    else:
-        return False
 
 def compute_suspension_forces(action=None, state=None):
     """
