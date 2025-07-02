@@ -18,81 +18,72 @@
   <worldbody>
     <geom name="floor" type="plane" size="150 150 0.3"
           rgba="0.8 0.8 0.8 1" material="grid_mat"
-          friction="0.8 0.005 0.0001"/>
+          friction="1.0 0.01 0.001"/>
 
-    <body name="chassis" pos="0 0 0.15">
-      <joint name="x"   type="slide" axis="1 0 0" damping="0.1"/>
-      <joint name="y"   type="slide" axis="0 1 0" damping="0.1"/>
-      <joint name="rot" type="hinge" axis="0 0 1" damping="0.1"/>
+    <body name="chassis" pos="0 0 0.4">
+      <inertial pos="0.15 0 0" mass="1500" diaginertia="460 2160 1000"/>
+      <joint name="x_slide" type="slide" axis="1 0 0" damping="0.1"/>
+      <joint name="z_slide" type="slide" axis="0 0 1" damping="0.1"/>
+      <joint name="roll" type="hinge" axis="1 0 0" damping="0.1"/>
+      <joint name="pitch" type="hinge" axis="0 1 0" damping="0.1"/>
 
-      <geom name="chassis" type="box" size="0.45 0.3 0.09"
-            rgba="1 0 0 1" mass="100.0"/>
-      <geom name="front" type="box" size="0.15 0.09 0.03"
-            pos="0.3 0 0.09" rgba="0 1 0 1"/>
-      <geom name="rear"  type="box" size="0.15 0.09 0.03"
-            pos="-0.3 0 0.09" rgba="0 0 1 1"/>
+      <geom name="chassis_geom" type="box" size="1.55 1.5 0.09"
+            rgba="1 0 0 1"/>
 
-      <!-- ✅ 운전석 센서 부착 위치 (site) -->
-      <site name="driver_seat" pos="0 0 0.12" size="0.015"
+      <site name="driver_seat" pos="0.15 0.75 0.09" size="0.015"
             rgba="1 0 1 0.5"/>
 
-      <!-- LiDAR origin sites -->
-      <site name="lidar_left" pos="0.3 0.32 0.06" size="0.01"
-            rgba="0 1 1 0.5"/>
-      <site name="lidar_right" pos="0.3 -0.32 0.06" size="0.01"
-            rgba="0 1 1 0.5"/>
+      <site name="lidar_left" pos="0.15 1.5 0.09" size="0.01"
+            rgba="1 0 0 1"/>
+      <site name="lidar_right" pos="0.15 -1.5 0.09" size="0.01"
+            rgba="1 0 0 1"/>
 
-      <!-- 앞왼쪽 바퀴 -->
-      <body name="fl_susp" pos="0.3 0.36 0.0">
-        <inertial pos="0 0 0" mass="1" diaginertia="0.001 0.001 0.001"/>
-        <joint name="fl_suspension" type="slide" axis="0 0 1" damping="2"/>
 
+      <!-- Front Left Suspension & Wheel -->
+      <body name="fl_susp" pos="1.55 1.65 0.0">
+        <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
+        <joint name="fl_suspension" type="slide" axis="0 0 1" damping="1000"/>
         <body name="front_left_wheel" pos="0 0 -0.09">
-          <joint name="fl_steer" type="hinge" axis="0 0 1" range="-0.6 0.6" damping="0.05"/>
           <joint name="fl_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
-          <geom name="fl_geom" type="cylinder" size="0.09 0.045"
-                euler="90 0 0" material="wheel_mat"
-                mass="0.1" friction="0.8 0.005 0.0001"/>
+          <geom name="fl_geom" type="cylinder" size="0.3 0.09"
+                euler="90 0 0" material="wheel_mat" mass="35"
+                friction="1.0 0.01 0.001"/>
         </body>
       </body>
 
-      <!-- 앞오른쪽 바퀴 -->
-      <body name="fr_susp" pos="0.3 -0.36 0.0">
-        <inertial pos="0 0 0" mass="1" diaginertia="0.001 0.001 0.001"/>
-        <joint name="fr_suspension" type="slide" axis="0 0 1" damping="2"/>
-
+      <!-- Front Right Suspension & Wheel -->
+      <body name="fr_susp" pos="1.55 -1.65 0.0">
+        <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
+        <joint name="fr_suspension" type="slide" axis="0 0 1" damping="1000"/>
         <body name="front_right_wheel" pos="0 0 -0.09">
-          <joint name="fr_steer" type="hinge" axis="0 0 1" range="-0.6 0.6" damping="0.05"/>
           <joint name="fr_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
-          <geom name="fr_geom" type="cylinder" size="0.09 0.045"
-                euler="90 0 0" material="wheel_mat"
-                mass="0.1" friction="0.8 0.005 0.0001"/>
+          <geom name="fr_geom" type="cylinder" size="0.3 0.09"
+                euler="90 0 0" material="wheel_mat" mass="35"
+                friction="1.0 0.01 0.001"/>
         </body>
       </body>
 
-      <!-- 뒤왼쪽 바퀴 -->
-      <body name="rl_susp" pos="-0.3 0.36 0.0">
-        <inertial pos="0 0 0" mass="1" diaginertia="0.001 0.001 0.001"/>
-        <joint name="rl_suspension" type="slide" axis="0 0 1" damping="2"/>
-
+      <!-- Rear Left Suspension & Wheel -->
+      <body name="rl_susp" pos="-1.55 1.65 0.0">
+        <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
+        <joint name="rl_suspension" type="slide" axis="0 0 1" damping="1000"/>
         <body name="rear_left_wheel" pos="0 0 -0.09">
           <joint name="rl_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
-          <geom name="rl_geom" type="cylinder" size="0.09 0.045"
-                euler="90 0 0" material="wheel_mat"
-                mass="0.1" friction="0.8 0.005 0.0001"/>
+          <geom name="rl_geom" type="cylinder" size="0.3 0.09"
+                euler="90 0 0" material="wheel_mat" mass="35"
+                friction="1.0 0.01 0.001"/>
         </body>
       </body>
 
-      <!-- 뒤오른쪽 바퀴 -->
-      <body name="rr_susp" pos="-0.3 -0.36 0.0">
-        <inertial pos="0 0 0" mass="1" diaginertia="0.001 0.001 0.001"/>
-        <joint name="rr_suspension" type="slide" axis="0 0 1" damping="2"/>
-
+      <!-- Rear Right Suspension & Wheel -->
+      <body name="rr_susp" pos="-1.55 -1.65 0.0">
+        <inertial pos="0 0 0" mass="25" diaginertia="0.001 0.001 0.001"/>
+        <joint name="rr_suspension" type="slide" axis="0 0 1" damping="1000"/>
         <body name="rear_right_wheel" pos="0 0 -0.09">
           <joint name="rr_wheel" type="hinge" axis="0 1 0" damping="0.01"/>
-          <geom name="rr_geom" type="cylinder" size="0.09 0.045"
-                euler="90 0 0" material="wheel_mat"
-                mass="0.1" friction="0.8 0.005 0.0001"/>
+          <geom name="rr_geom" type="cylinder" size="0.3 0.09"
+                euler="90 0 0" material="wheel_mat" mass="35"
+                friction="1.0 0.01 0.001"/>
         </body>
       </body>
 
@@ -100,29 +91,21 @@
   </worldbody>
 
   <sensor>
-    <!-- ✅ 운전석 기준 vertical 가속도 -->
-      <accelerometer name="accel_z" site="driver_seat"/>
-      <!-- ✅ pitch 확인용 자이로 (z축은 yaw, pitch는 x축 기준) -->
-      <gyro name="gyro_pitch" site="driver_seat"/>
-
-      <!-- LiDAR site positions for simulation -->
-      <!-- MuJoCo frame sensors use objtype/objname to specify targets -->
-      <framepos name="lidar_left_pos" objtype="site" objname="lidar_left"/>
-      <framepos name="lidar_right_pos" objtype="site" objname="lidar_right"/>
-    </sensor>
+    <accelerometer name="accel_z" site="driver_seat"/>
+    <gyro name="gyro_pitch" site="driver_seat"/>
+    <framepos name="lidar_left_pos" objtype="site" objname="lidar_left"/>
+    <framepos name="lidar_right_pos" objtype="site" objname="lidar_right"/>
+  </sensor>
 
   <actuator>
-    <motor name="fl_motor" joint="fl_wheel" ctrlrange="-10 10" gear="0.1"/>
-    <motor name="fr_motor" joint="fr_wheel" ctrlrange="-10 10" gear="0.1"/>
-    <motor name="rl_motor" joint="rl_wheel" ctrlrange="-10 10" gear="0.1"/>
-    <motor name="rr_motor" joint="rr_wheel" ctrlrange="-10 10" gear="0.1"/>
+    <motor name="fl_motor" joint="fl_wheel" ctrlrange="-10 10" gear="1.0"/>
+    <motor name="fr_motor" joint="fr_wheel" ctrlrange="-10 10" gear="1.0"/>
+    <motor name="rl_motor" joint="rl_wheel" ctrlrange="-10 10" gear="1.0"/>
+    <motor name="rr_motor" joint="rr_wheel" ctrlrange="-10 10" gear="1.0"/>
 
-    <motor name="fl_steer" joint="fl_steer" ctrlrange="-0.6 0.6" gear="1"/>
-    <motor name="fr_steer" joint="fr_steer" ctrlrange="-0.6 0.6" gear="1"/>
-
-    <general name="fl_spring" joint="fl_suspension" gainprm="0 0 0" biasprm="0 1000 10"/>
-    <general name="fr_spring" joint="fr_suspension" gainprm="0 0 0" biasprm="0 1000 10"/>
-    <general name="rl_spring" joint="rl_suspension" gainprm="0 0 0" biasprm="0 1000 10"/>
-    <general name="rr_spring" joint="rr_suspension" gainprm="0 0 0" biasprm="0 1000 10"/>
+    <general name="fl_spring" joint="fl_suspension" gainprm="0 0 0" biasprm="0 35000 1000"/>
+    <general name="fr_spring" joint="fr_suspension" gainprm="0 0 0" biasprm="0 35000 1000"/>
+    <general name="rl_spring" joint="rl_suspension" gainprm="0 0 0" biasprm="0 38000 1100"/>
+    <general name="rr_spring" joint="rr_suspension" gainprm="0 0 0" biasprm="0 38000 1100"/>
   </actuator>
 </mujoco>
