@@ -1,8 +1,6 @@
 # scripts/setup.py
 
-from utils import create_new_scene
-from config.bump_config import BumpConfig
-from pathlib import Path
+from utils import create_new_scene, BumpConfig
 
 def main():
     # Config 설정

@@ -6,7 +6,28 @@ import numpy as np
 
 from pathlib import Path
 from stl import mesh as stl_mesh
+from dataclasses import dataclass, asdict
 
+@dataclass
+class BumpConfig:
+    
+    seed: int = 42
+
+    num_bumps: int = 5
+
+    a_range: tuple = (2.5, 3.5)
+    b_range: tuple = (0.1, 0.2)
+    h_range: tuple = (4.5, 5.0)
+    segments: int = 80
+
+    pos_x: float = 0.0
+    pos_y: float = 0.0
+    pos_z: float = 0.0
+
+    def to_dict(self):
+        return asdict(self)
+
+DEFAULT_BUMP_CONFIG = BumpConfig()
 
 def create_speed_bump(a, b, h, segments=80):
     """타원형 방지턱 mesh(삼각형면) 생성"""
@@ -67,7 +88,7 @@ def create_new_scene(base_path, out_path, bump_config):
 
     # 2. STL 생성 및 저장
     faces = create_speed_bump(a, b, h, segments)
-    bump_dir = "models/speed_bump/"
+    bump_dir = "models/speed_bumps/"
     stl_file_name = f"bump_a{a:.2f}_b{b:.2f}_h{h:.2f}.stl"
     Path(bump_dir).mkdir(parents=True, exist_ok=True)
     save_mesh_to_stl(faces, bump_dir, stl_file_name)

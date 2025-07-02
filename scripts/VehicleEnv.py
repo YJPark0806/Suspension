@@ -23,13 +23,13 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
     def __init__(self, **kwargs):
         
-        
         observation_space = Box(
             low=-np.inf,
             high=np.inf,
             shape=(64,),  # 원하는 차원으로 수정하세요
             dtype=np.float64,
         )
+
         xml_path = os.path.abspath("models/scenes/test_scene.xml")
 
         MujocoEnv.__init__(self, 
