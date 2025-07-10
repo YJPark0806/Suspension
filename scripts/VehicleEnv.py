@@ -145,4 +145,12 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         pass
 
     def is_done(self): # TODO
-        pass
+        # 차량의 현재 x 위치 확인
+        vehicle_x_pos = self.data.qpos[0]
+        
+        # bump에서 10m 더 지나갔는지 확인 (bump는 x=0 위치, 10m 더 = x>10.0)
+        if vehicle_x_pos > 10.0:
+            print(f"차량이 bump에서 10m 지나갔습니다. (현재 위치: x={vehicle_x_pos:.2f}m)")
+            return True
+        
+        return False

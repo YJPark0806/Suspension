@@ -47,3 +47,17 @@ def update_all_realtime_plot(
 def close_all_realtime_plot():
     plt.ioff()
     plt.show()
+
+def save_all_plots_as_image(fig, filename="simulation_results.png"):
+    """
+    현재 그래프를 이미지 파일로 저장
+    
+    Parameters:
+    - fig: matplotlib figure 객체
+    - filename: 저장할 파일명 (기본값: "simulation_results.png")
+    """
+    try:
+        fig.savefig(filename, dpi=300, bbox_inches='tight', facecolor='white')
+        print(f"그래프가 저장되었습니다: {filename}")
+    except Exception as e:
+        print(f"그래프 저장 중 오류 발생: {e}")

@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import sys
 from scripts.VehicleEnv import VehicleEnv
 import mujoco
 import mujoco.viewer
@@ -7,6 +8,7 @@ from utils.plot import (
     init_all_realtime_plot,
     update_all_realtime_plot,
     close_all_realtime_plot,
+    save_all_plots_as_image,
 )
 
 def main():
@@ -72,6 +74,17 @@ def main():
             step_count += 1
             if step_count > 2000:
                 break
+
+        # 시뮬레이션 종료 후 처리
+        if done:
+            print("시뮬레이션이 완료되었습니다.")
+            save_all_plots_as_image(fig, "results/simulation_results.png")
+            print("프로그램을 종료합니다.")
+            # 플롯 창 닫기
+            close_all_realtime_plot()
+            viewer.close()
+            env.close()
+            sys.exit(0)
 
     except KeyboardInterrupt:
         print("강제 종료")
