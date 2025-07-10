@@ -30,7 +30,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
             dtype=np.float64,
         )
 
-        xml_path = os.path.abspath("models/scenes/test_scene.xml")
+        xml_path = os.path.abspath("models/scenes/new_scene.xml")
 
         MujocoEnv.__init__(self, 
                            xml_path, 

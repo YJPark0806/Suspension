@@ -89,7 +89,7 @@ def create_new_scene(base_path, out_path, bump_config):
     # 2. STL 생성 및 저장
     faces = create_speed_bump(a, b, h, segments)
     bump_dir = "models/speed_bumps/"
-    stl_file_name = f"bump_a{a:.2f}_b{b:.2f}_h{h:.2f}.stl"
+    stl_file_name = f"bump.stl"
     Path(bump_dir).mkdir(parents=True, exist_ok=True)
     save_mesh_to_stl(faces, bump_dir, stl_file_name)
 
