@@ -22,18 +22,19 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
 
     def __init__(self, **kwargs):
-        
+
         observation_space = Box(
             low=-np.inf,
             high=np.inf,
             shape=(64,),  # 원하는 차원으로 수정하세요
             dtype=np.float64,
         )
+        self.action_space = Box(low=-150.0, high=150.0, shape=(4,), dtype=np.float32)
 
         xml_path = os.path.abspath("models/scenes/new_scene.xml")
 
-        MujocoEnv.__init__(self, 
-                           xml_path, 
+        MujocoEnv.__init__(self,
+                           xml_path,
                            frame_skip=5,
                            observation_space=observation_space,
                            **kwargs
@@ -43,7 +44,8 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.speed_pid = PIDController(kp=150.0, ki=1.0, kd=10.0, output_limits=(-2000, 2000))
         self.target_speed = 30 / 3.6 # 30 km/h in m/s
 
-        self.sim_dt = self.model.opt.timestep * self.frame_skip 
+        self.sim_dt = self.model.opt.timestep * self.frame_skip
+        self.viewer = None
 
     def _get_obs(self): # TODO
         return np.concatenate([
@@ -51,16 +53,17 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
             self.data.qvel.flat,
         ])
 
-    def step(self, action):         
+    def step(self, action):
         speed_err = self.target_speed - self.data.qvel[0]
         speed_ctrl = self.speed_pid(speed_err, self.sim_dt)
         susp_forces = compute_suspension_forces(action=action, state=self.data)
 
         controls = compose_control(speed_ctrl, susp_forces)
 
-        print("-"*100)
-        print(f"speed_err: {speed_err}\nspeed_ctrl: {speed_ctrl}\nsusp_forces: {susp_forces}\n")
-        print(f"controls: {controls}")
+        if self.render_mode:
+            print("-"*100)
+            print(f"speed_err: {speed_err}\nspeed_ctrl: {speed_ctrl}\nsusp_forces: {susp_forces}\n")
+            print(f"controls: {controls}")
 
         self.lidar = get_dual_lidar_scan(self.model, self.data, ("lidar_left", "lidar_right"), num_rays=32)
 
@@ -134,23 +137,38 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.speed_pid.reset()
 
         return self._get_obs()
-    
-    def viewer_setup(self): 
+
+    def viewer_setup(self):
         assert self.viewer is not None
         self.viewer.cam.trackbodyid = 0
         self.viewer.cam.distance = self.model.stat.extent * 0.7
         self.viewer.cam.elevation = -20
 
-    def compute_reward(self): # TODO
-        pass
+    def compute_reward(self):
+        roll_rate = self.data.qvel[2]  # rad/s
+        pitch_rate = self.data.qvel[3]  # rad/s
+        vert_acc = self.data.qacc[1]  # m/s²
+
+        # weights
+        w1 = 1
+        w2 = 1
+        w3 = 1
+
+        #   reward = -(roll̇² + pitcḣ² + a_z²)
+        reward = - w1 * roll_rate ** 2 - w2 * pitch_rate ** 2 - w3 * vert_acc ** 2
+        return reward
 
     def is_done(self): # TODO
         # 차량의 현재 x 위치 확인
         vehicle_x_pos = self.data.qpos[0]
-        
+
         # bump에서 10m 더 지나갔는지 확인 (bump는 x=0 위치, 10m 더 = x>10.0)
         if vehicle_x_pos > 10.0:
             print(f"차량이 bump에서 10m 지나갔습니다. (현재 위치: x={vehicle_x_pos:.2f}m)")
             return True
-        
+
         return False
+
+    def close(self):
+        if hasattr(self, "viewer") and self.viewer is not None:
+            self.viewer.close()
