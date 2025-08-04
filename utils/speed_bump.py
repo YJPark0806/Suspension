@@ -15,9 +15,17 @@ class BumpConfig:
 
     num_bumps: int = 5
 
-    a_range: tuple = (2.5, 3.5)
-    b_range: tuple = (0.1, 0.2)
-    h_range: tuple = (4.5, 5.0)
+    #==========[speed bump 형상]==============
+    # 국토교통부 기준 규격
+    #   - 과속방지턱은 차량 속도를 30km/h 이하로 제한하기 위해 사용함
+    #   - 주행방향 길이는 3m, 높이 10cm를 권장함
+    #   - 단 폭이 6m 이하의 소도로에서는 주행방향 길이는 2m, 높이 7.5cm 권장함
+    # 출처: https://www.molit.go.kr/USR/I0204/m_45/dtl.jsp?gubun=&search=&search_dept_id=&search_dept_nm=&old_search_dept_nm=&psize=10&search_regdate_s=&search_regdate_e=&srch_usr_nm=N&srch_usr_num=&srch_usr_year=&srch_usr_titl=N&srch_usr_ctnt=N&lcmspage=841&idx=8453
+
+    # 따라서 시뮬레이션에 사용될 bump 형상은 주행방향 길이 3m +-0.2m, 높이 10cm +- 2cm에서 uniform distribution sampling
+    a_range: tuple = (2.8, 3.2)  #[m]
+    b_range: tuple = (0.08, 0.12)  #[m]
+    h_range: tuple = (4.5, 5.5)  #[m]
     segments: int = 80
 
     pos_x: float = 0.0
