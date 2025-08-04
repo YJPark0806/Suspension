@@ -29,6 +29,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
             shape=(64,),  # 원하는 차원으로 수정하세요
             dtype=np.float64,
         )
+        self.action_space = Box(low=-150.0, high=150.0, shape=(4,), dtype=np.float32)
 
         xml_path = os.path.abspath("models/scenes/new_scene.xml")
 
@@ -142,7 +143,18 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.viewer.cam.elevation = -20
 
     def compute_reward(self): # TODO
-        pass
+        roll_rate = self.data.qvel[2]  # rad/s
+        pitch_rate = self.data.qvel[3]  # rad/s
+        vert_acc = self.data.qacc[1]  # m/s²
+
+        # weights
+        w1 = 1
+        w2 = 1
+        w3 = 1
+
+        #   reward = -(roll̇² + pitcḣ² + a_z²)
+        reward = - w1 * roll_rate ** 2 - w2 * pitch_rate ** 2 - w3 * vert_acc ** 2
+        return reward
 
     def is_done(self): # TODO
         # 차량의 현재 x 위치 확인
