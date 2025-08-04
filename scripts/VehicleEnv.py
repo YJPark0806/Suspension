@@ -29,6 +29,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
             shape=(64,),  # 원하는 차원으로 수정하세요
             dtype=np.float64,
         )
+        self.action_space = Box(low=-150.0, high=150.0, shape=(4,), dtype=np.float32)
 
         xml_path = os.path.abspath("models/scenes/new_scene.xml")
 
@@ -46,10 +47,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.sim_dt = self.model.opt.timestep * self.frame_skip 
 
     def _get_obs(self): # TODO
-        return np.concatenate([
-            self.data.qpos.flat,
-            self.data.qvel.flat,
-        ])
+        return np.concatenate([self.lidar[0], self.lidar[1]])  # shape: (64,)
 
     def step(self, action):         
         speed_err = self.target_speed - self.data.qvel[0]
@@ -58,9 +56,9 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
         controls = compose_control(speed_ctrl, susp_forces)
 
-        print("-"*100)
-        print(f"speed_err: {speed_err}\nspeed_ctrl: {speed_ctrl}\nsusp_forces: {susp_forces}\n")
-        print(f"controls: {controls}")
+        # print("-"*100)
+        # print(f"speed_err: {speed_err}\nspeed_ctrl: {speed_ctrl}\nsusp_forces: {susp_forces}\n")
+        # print(f"controls: {controls}")
 
         self.lidar = get_dual_lidar_scan(self.model, self.data, ("lidar_left", "lidar_right"), num_rays=32)
 
@@ -70,7 +68,8 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
         obs = self._get_obs()
         reward = self.compute_reward()
-        done = self.is_done()
+        terminated = self.is_done()
+        truncated = False
 
         info = {}
 
@@ -88,7 +87,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         # print(f"done: {done}")
         # print(f"info: {info}")
 
-        return obs, reward, done, info
+        return obs, reward, terminated, truncated, info
 
     def reset_model(self):
         """
@@ -133,6 +132,11 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.set_state(init_qpos, init_qvel)
         self.speed_pid.reset()
 
+        # lidar 변수 초기화
+        self.lidar = get_dual_lidar_scan(
+            self.model, self.data, ("lidar_left", "lidar_right"), num_rays=32
+        )
+
         return self._get_obs()
     
     def viewer_setup(self): 
@@ -142,7 +146,18 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.viewer.cam.elevation = -20
 
     def compute_reward(self): # TODO
-        pass
+        roll_rate = self.data.qvel[2]  # rad/s
+        pitch_rate = self.data.qvel[3]  # rad/s
+        vert_acc = self.data.qacc[1]  # m/s²
+
+        # weights
+        w1 = 1
+        w2 = 1
+        w3 = 1
+
+        #   reward = -(roll̇² + pitcḣ² + a_z²)
+        reward = - w1 * roll_rate ** 2 - w2 * pitch_rate ** 2 - w3 * vert_acc ** 2
+        return reward
 
     def is_done(self): # TODO
         # 차량의 현재 x 위치 확인
@@ -150,7 +165,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         
         # bump에서 10m 더 지나갔는지 확인 (bump는 x=0 위치, 10m 더 = x>10.0)
         if vehicle_x_pos > 10.0:
-            print(f"차량이 bump에서 10m 지나갔습니다. (현재 위치: x={vehicle_x_pos:.2f}m)")
+            # print(f"차량이 bump에서 10m 지나갔습니다. (현재 위치: x={vehicle_x_pos:.2f}m)")
             return True
         
         return False
