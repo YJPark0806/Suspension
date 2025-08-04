@@ -47,10 +47,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.sim_dt = self.model.opt.timestep * self.frame_skip 
 
     def _get_obs(self): # TODO
-        return np.concatenate([
-            self.data.qpos.flat,
-            self.data.qvel.flat,
-        ])
+        return np.concatenate([self.lidar[0], self.lidar[1]])  # shape: (64,)
 
     def step(self, action):         
         speed_err = self.target_speed - self.data.qvel[0]
@@ -71,7 +68,8 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
         obs = self._get_obs()
         reward = self.compute_reward()
-        done = self.is_done()
+        terminated = self.is_done()
+        truncated = False
 
         info = {}
 
@@ -89,7 +87,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         # print(f"done: {done}")
         # print(f"info: {info}")
 
-        return obs, reward, done, info
+        return obs, reward, terminated, truncated, info
 
     def reset_model(self):
         """
@@ -133,6 +131,11 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
         self.set_state(init_qpos, init_qvel)
         self.speed_pid.reset()
+
+        # lidar 변수 초기화
+        self.lidar = get_dual_lidar_scan(
+            self.model, self.data, ("lidar_left", "lidar_right"), num_rays=32
+        )
 
         return self._get_obs()
     
