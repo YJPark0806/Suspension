@@ -12,7 +12,7 @@ from utils.plot import (
     save_all_plots_as_image,
 )
 
-def main():
+def test():
     # 환경 및 모델 초기화
     env = VehicleEnv()
     model = PPO.load("scripts/ppo_vehicle_model.zip")  # 학습된 모델 불러오기
@@ -97,4 +97,4 @@ def main():
         env.close()
 
 if __name__ == "__main__":
-    main()
+    test()

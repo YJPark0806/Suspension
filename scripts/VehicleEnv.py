@@ -56,9 +56,9 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
         controls = compose_control(speed_ctrl, susp_forces)
 
-        print("-"*100)
-        print(f"speed_err: {speed_err}\nspeed_ctrl: {speed_ctrl}\nsusp_forces: {susp_forces}\n")
-        print(f"controls: {controls}")
+        # print("-"*100)
+        # print(f"speed_err: {speed_err}\nspeed_ctrl: {speed_ctrl}\nsusp_forces: {susp_forces}\n")
+        # print(f"controls: {controls}")
 
         self.lidar = get_dual_lidar_scan(self.model, self.data, ("lidar_left", "lidar_right"), num_rays=32)
 
@@ -165,7 +165,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         
         # bump에서 10m 더 지나갔는지 확인 (bump는 x=0 위치, 10m 더 = x>10.0)
         if vehicle_x_pos > 10.0:
-            print(f"차량이 bump에서 10m 지나갔습니다. (현재 위치: x={vehicle_x_pos:.2f}m)")
+            # print(f"차량이 bump에서 10m 지나갔습니다. (현재 위치: x={vehicle_x_pos:.2f}m)")
             return True
         
         return False
