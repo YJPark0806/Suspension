@@ -31,13 +31,14 @@ except:
 class SimulationController(QWidget):
     """시뮬레이션 제어 위젯"""
     
-    def __init__(self, realtime_widget=None, parent=None):
+    def __init__(self, realtime_widget=None, lidar_2d_widget=None, parent=None):
         super().__init__(parent)
         self.env = None
         self.viewer = None
         self.simulation_running = False
         self.simulation_paused = False
         self.realtime_widget = realtime_widget  # RealtimePlotWidget 참조
+        self.lidar_2d_widget = lidar_2d_widget  # LiDAR2DPolarWidget 참조
         
         # 실시간 플롯 설정
         self.realtime_mode = False  # 기본값을 False로 설정
@@ -349,6 +350,10 @@ class SimulationController(QWidget):
                     if hasattr(lidar_vals, '__len__') and len(lidar_vals) > 0:
                         print(f"  First 5 values: {lidar_vals[:5] if len(lidar_vals) >= 5 else lidar_vals}")
             
+            # 2D LiDAR 위젯 업데이트 (항상 실행)
+            if self.lidar_2d_widget is not None:
+                self.lidar_2d_widget.update_lidar_data(lidar_vals)
+            
             # MuJoCo 뷰어 동기화
             if self.viewer is not None:
                 import mujoco
@@ -399,6 +404,12 @@ class SimulationController(QWidget):
                 self.log_message(f"Final results displayed: {len(self.time_log)} data points")
             else:
                 self.log_message("Results already displayed in real-time mode")
+            
+            # 2D LiDAR 위젯에 최종 데이터 전달
+            if self.lidar_2d_widget is not None and len(self.lidar_log) > 0:
+                # 마지막 LiDAR 데이터를 2D 위젯에 전달
+                final_lidar_data = self.lidar_log[-1] if self.lidar_log else None
+                self.lidar_2d_widget.update_lidar_data(final_lidar_data)
             
             # 결과 탭으로 자동 전환
             parent_window = self.parent()
@@ -771,13 +782,19 @@ class MainPlotWindow(QMainWindow):
         # 실시간 플롯 탭 (먼저 생성)
         self.realtime_widget = RealtimePlotWidget()
         
+        # 2D LiDAR 스캔 탭 (먼저 생성)
+        self.lidar_2d_widget = LiDAR2DPolarWidget()
+        
         # 시뮬레이션 제어 탭 (RealtimePlotWidget 참조 전달)
-        self.simulation_controller = SimulationController(realtime_widget=self.realtime_widget)
+        self.simulation_controller = SimulationController(realtime_widget=self.realtime_widget, lidar_2d_widget=self.lidar_2d_widget)
         
         self.tab_widget.addTab(self.simulation_controller, "Simulation Control")
         
         # 실시간 플롯 탭 추가
         self.tab_widget.addTab(self.realtime_widget, "Real-time Monitoring")
+        
+        # 2D LiDAR 스캔 탭 추가
+        self.tab_widget.addTab(self.lidar_2d_widget, "2D LiDAR Scan")
         
         # 레이아웃 설정
         layout = QVBoxLayout()
@@ -793,6 +810,202 @@ class MainPlotWindow(QMainWindow):
         if hasattr(self, 'simulation_controller'):
             self.simulation_controller.closeEvent(event)
         event.accept()
+
+
+class LiDAR2DPolarWidget(QWidget):
+    """2D LiDAR Polar 플롯을 위한 위젯"""
+    
+    def __init__(self, num_rays=32, parent=None):
+        super().__init__(parent)
+        self.num_rays = num_rays
+        self.lidar_vals = np.zeros(num_rays)
+        
+        self.init_ui()
+        self.setup_plots()
+        
+    def init_ui(self):
+        """UI 초기화"""
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        
+        # 컨트롤 패널
+        control_group = QGroupBox("2D LiDAR Polar View Control")
+        control_layout = QHBoxLayout()
+        
+        # 최대 거리 설정
+        self.max_dist_label = QLabel("Max Distance (m):")
+        self.max_dist_spin = QDoubleSpinBox()
+        self.max_dist_spin.setRange(0.0, 1.0)
+        self.max_dist_spin.setValue(1.0)  # 범위에 맞게 기본값 수정
+        self.max_dist_spin.setSingleStep(0.1)
+        self.max_dist_spin.valueChanged.connect(self.update_max_distance)
+        
+        # 점 크기 설정
+        self.point_size_label = QLabel("Point Size:")
+        self.point_size_spin = QSpinBox()
+        self.point_size_spin.setRange(10, 200)
+        self.point_size_spin.setValue(50)
+        self.point_size_spin.valueChanged.connect(self.update_point_size)
+        
+        # 격자 표시
+        self.grid_cb = QCheckBox("Show Grid")
+        self.grid_cb.setChecked(True)
+        self.grid_cb.toggled.connect(self.toggle_grid)
+        
+        # 저장 버튼
+        self.save_btn = QPushButton("Save Image")
+        self.save_btn.clicked.connect(self.save_plot)
+        
+        # 테스트 데이터 버튼
+        self.test_btn = QPushButton("Test Data")
+        self.test_btn.clicked.connect(self.generate_test_data)
+        
+        control_layout.addWidget(self.max_dist_label)
+        control_layout.addWidget(self.max_dist_spin)
+        control_layout.addWidget(self.point_size_label)
+        control_layout.addWidget(self.point_size_spin)
+        control_layout.addWidget(self.grid_cb)
+        control_layout.addWidget(self.save_btn)
+        control_layout.addWidget(self.test_btn)
+        control_layout.addStretch()
+        
+        control_group.setLayout(control_layout)
+        layout.addWidget(control_group)
+        
+        # 플롯 영역
+        self.figure = Figure(figsize=(10, 8))
+        self.canvas = FigureCanvas(self.figure)
+        layout.addWidget(self.canvas)
+        
+    def setup_plots(self):
+        """플롯 설정"""
+        self.figure.clear()
+        
+        # Polar subplot 생성
+        self.ax = self.figure.add_subplot(111, projection='polar')
+        
+        # 각도 설정 (30도~150도, lidar.py와 동일)
+        self.lidar_angles = np.radians(np.linspace(30, 150, self.num_rays))
+        
+        # 초기 scatter plot
+        self.lidar_scatter = self.ax.scatter(
+            self.lidar_angles, 
+            np.zeros(self.num_rays), 
+            c='blue', 
+            s=50, 
+            alpha=0.7
+        )
+        
+        # Polar plot 설정
+        self.ax.set_ylim(0, 1.0)  # 거리 범위를 1.0으로 수정
+        self.ax.set_theta_zero_location('E')  # 0도를 오른쪽으로 (시계방향 90도 회전)
+        self.ax.set_theta_direction(-1)  # 시계방향
+        self.ax.set_title("LiDAR 2D Polar View (Ground Scan 30°-150°)", fontsize=14, pad=20)
+        
+        # 각도 표시를 도 단위로 변경
+        theta_ticks = np.radians([0, 30, 60, 90, 120, 150, 180])
+        theta_labels = ['0°', '30°', '60°', '90°', '120°', '150°', '180°']
+        self.ax.set_thetagrids(np.degrees(theta_ticks), theta_labels)
+        
+        # 거리 눈금 설정
+        self.ax.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
+        self.ax.set_yticklabels(['0.2m', '0.4m', '0.6m', '0.8m', '1.0m'], fontsize=10)
+        
+        self.ax.grid(self.grid_cb.isChecked())
+        
+        self.figure.tight_layout()
+        self.canvas.draw()
+        
+    def update_lidar_data(self, lidar_data):
+        """LiDAR 데이터 업데이트"""
+        if lidar_data is not None:
+            if hasattr(lidar_data, 'shape'):
+                if len(lidar_data.shape) == 1:
+                    self.lidar_vals = np.array(lidar_data[:self.num_rays])
+                elif len(lidar_data.shape) == 2:
+                    # 2D 배열인 경우 첫 번째와 두 번째 행을 평균내어 사용
+                    if lidar_data.shape[0] >= 2:
+                        self.lidar_vals = np.mean(lidar_data[:2], axis=0)[:self.num_rays]
+                    else:
+                        self.lidar_vals = np.array(lidar_data[0][:self.num_rays])
+                else:
+                    self.lidar_vals = np.zeros(self.num_rays)
+            elif isinstance(lidar_data, (list, tuple)):
+                self.lidar_vals = np.array(lidar_data[:self.num_rays])
+            else:
+                self.lidar_vals = np.zeros(self.num_rays)
+            
+            self.update_plot()
+    
+    def update_plot(self):
+        """플롯 업데이트"""
+        if len(self.lidar_vals) > 0:
+            # 각도는 고정, 거리만 업데이트
+            self.lidar_scatter.set_offsets(np.c_[self.lidar_angles, self.lidar_vals])
+            
+            # 거리에 따른 색상 배열 생성
+            colors = []
+            max_range = self.max_dist_spin.value()
+            for dist in self.lidar_vals:
+                normalized_dist = dist / max_range
+                if normalized_dist < 0.2:  # 매우 가까움 (빨간색)
+                    colors.append('red')
+                elif normalized_dist < 0.4:  # 가까움 (주황색)
+                    colors.append('orange')
+                elif normalized_dist < 0.6:  # 보통 (노란색)
+                    colors.append('yellow')
+                elif normalized_dist < 0.8:  # 멀음 (연한 파란색)
+                    colors.append('lightblue')
+                else:  # 매우 멀음 (청록색)
+                    colors.append('cyan')
+            
+            # 색상 업데이트
+            self.lidar_scatter.set_color(colors)
+            
+        self.canvas.draw()
+    
+    def update_max_distance(self, value):
+        """최대 거리 업데이트"""
+        self.ax.set_ylim(0, value)
+        # 거리 눈금 재설정
+        ticks = np.linspace(value/4, value, 4)
+        self.ax.set_yticks(ticks)
+        self.ax.set_yticklabels([f'{tick:.1f}m' for tick in ticks], fontsize=10)
+        self.canvas.draw()
+    
+    def update_point_size(self, value):
+        """점 크기 업데이트"""
+        self.lidar_scatter.set_sizes([value] * len(self.lidar_vals))
+        self.canvas.draw()
+    
+    def toggle_grid(self, checked):
+        """격자 표시 토글"""
+        self.ax.grid(checked)
+        self.canvas.draw()
+    
+    def generate_test_data(self):
+        """테스트 데이터 생성"""
+        # 예시: 1.0~1.5m 범위의 가짜 스캔 데이터 생성
+        test_scan = np.linspace(1.0, 1.5, self.num_rays)
+        # 약간의 노이즈 추가
+        test_scan += np.random.normal(0, 0.1, self.num_rays)
+        test_scan = np.clip(test_scan, 0.5, 2.0)  # 범위 제한
+        
+        self.update_lidar_data(test_scan)
+        print(f"Test data generated: {len(test_scan)} points, range: {np.min(test_scan):.2f}-{np.max(test_scan):.2f}m")
+    
+    def save_plot(self):
+        """플롯 이미지 저장"""
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Save 2D LiDAR Plot", "lidar_2d_polar.png", 
+            "PNG Files (*.png);;PDF Files (*.pdf);;SVG Files (*.svg)"
+        )
+        if filename:
+            try:
+                self.figure.savefig(filename, dpi=300, bbox_inches='tight', facecolor='white')
+                QMessageBox.information(self, "Save Complete", f"2D LiDAR plot saved to:\n{filename}")
+            except Exception as e:
+                QMessageBox.critical(self, "Save Error", f"Error occurred while saving:\n{str(e)}")
 
 
 # 전역 변수들
@@ -812,6 +1025,8 @@ def init_all_realtime_plot(num_rays=32):
         _main_window = MainPlotWindow()
         _main_window.realtime_widget.num_rays = num_rays
         _main_window.realtime_widget.setup_plots()
+        _main_window.lidar_2d_widget.num_rays = num_rays # LiDAR2DPolarWidget에도 같은 값 설정
+        _main_window.lidar_2d_widget.setup_plots()
         
     _main_window.show()
     return _main_window.realtime_widget
