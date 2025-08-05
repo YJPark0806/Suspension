@@ -33,9 +33,9 @@
       <site name="driver_seat" pos="0.15 0.75 0.09" size="0.015"
             rgba="1 0 1 0.5"/>
 
-      <site name="lidar_left" pos="0.15 1.5 0.09" size="0.01"
+      <site name="lidar_left" pos="0.15 2 0.5" size="0.01"
             rgba="1 0 0 1"/>
-      <site name="lidar_right" pos="0.15 -1.5 0.09" size="0.01"
+      <site name="lidar_right" pos="0.15 -2 0.5" size="0.01"
             rgba="1 0 0 1"/>
 
 
