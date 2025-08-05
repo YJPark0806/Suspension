@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from utils.plot import MainPlotWindow
+from utils.plot_qt import MainPlotWindow
 
 def main():
     """GUI 기반 시뮬레이션 애플리케이션 실행"""

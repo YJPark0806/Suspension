@@ -3,3 +3,4 @@ glfw
 numpy
 matplotlib
 numpy-stl
+PyQt5
