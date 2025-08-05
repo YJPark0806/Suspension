@@ -580,12 +580,12 @@ class RealtimePlotWidget(QWidget):
             self.axs[i].legend(loc='upper right')
             self.axs[i].grid(self.grid_cb.isChecked())
             
-        self.axs[4].set_ylim(0, 1.0)  # LiDAR 범위를 0-1.0으로 고정
+        self.axs[4].set_ylim(0, 3.0)  # LiDAR 범위를 0-1.0으로 고정
         self.axs[4].set_xlim(-0.5, self.num_rays - 0.5)  # X축 범위 설정
         self.axs[4].grid(self.grid_cb.isChecked())
         
         # LiDAR 축에 제목 추가
-        self.axs[4].set_title("LiDAR Distance (0.0 - 1.0)", fontsize=10)
+        self.axs[4].set_title("LiDAR Distance", fontsize=10)
         
         self.figure.tight_layout()
         self.canvas.draw()
@@ -753,7 +753,7 @@ class RealtimePlotWidget(QWidget):
                 print(f"Updated {updated_count} bars")
             
             # LiDAR 축 범위를 0-1.0으로 고정
-            self.axs[4].set_ylim(0, 1.0)
+            self.axs[4].set_ylim(0, 3.0)
         elif len(self.time_log) % 100 == 0:  # 데이터가 없을 때도 가끔씩만 출력
             print("No LiDAR data to update bars")
             
@@ -835,8 +835,8 @@ class LiDAR2DPolarWidget(QWidget):
         # 최대 거리 설정
         self.max_dist_label = QLabel("Max Distance (m):")
         self.max_dist_spin = QDoubleSpinBox()
-        self.max_dist_spin.setRange(0.0, 1.0)
-        self.max_dist_spin.setValue(1.0)  # 범위에 맞게 기본값 수정
+        self.max_dist_spin.setRange(0.0, 3.0)
+        self.max_dist_spin.setValue(3.0)  # 범위에 맞게 기본값 수정
         self.max_dist_spin.setSingleStep(0.1)
         self.max_dist_spin.valueChanged.connect(self.update_max_distance)
         
@@ -897,7 +897,7 @@ class LiDAR2DPolarWidget(QWidget):
         )
         
         # Polar plot 설정
-        self.ax.set_ylim(0, 1.0)  # 거리 범위를 1.0으로 수정
+        self.ax.set_ylim(0, 3.0)  # 거리 범위를 1.0으로 수정
         self.ax.set_theta_zero_location('E')  # 0도를 오른쪽으로 (시계방향 90도 회전)
         self.ax.set_theta_direction(-1)  # 시계방향
         self.ax.set_title("LiDAR 2D Polar View (Ground Scan 30°-150°)", fontsize=14, pad=20)
@@ -908,8 +908,8 @@ class LiDAR2DPolarWidget(QWidget):
         self.ax.set_thetagrids(np.degrees(theta_ticks), theta_labels)
         
         # 거리 눈금 설정
-        self.ax.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
-        self.ax.set_yticklabels(['0.2m', '0.4m', '0.6m', '0.8m', '1.0m'], fontsize=10)
+        self.ax.set_yticks([0.5, 1.0, 1.5, 2.0, 2.5, 3.0])
+        self.ax.set_yticklabels(['0.5m', '1.0m', '1.5m', '2.0m', '2.5m', '3.0m'], fontsize=10)
         
         self.ax.grid(self.grid_cb.isChecked())
         
