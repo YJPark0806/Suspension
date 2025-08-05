@@ -80,8 +80,9 @@ def tag_body(stl_file, pos, bump_config):
     rgba = getattr(bump_config, "rgba", "0.9 0.5 0.2 1")
     euler = getattr(bump_config, "euler", "0 0 -90")
     x, y, z = pos
+    body_name = f"bump_{stl_file.stem}"
     return (
-        f'    <body name="bump" pos="{x} {y} {z}">\n'
+        f'    <body name="{body_name}" pos="{x} {y} {z}">\n'
         f'        <geom type="mesh" mesh="{stl_file.stem}" rgba="{rgba}" euler="{euler}"/>\n'
         f'    </body>\n'
     )
@@ -121,3 +122,54 @@ def create_new_scene(base_path, out_path, bump_config):
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(xml)
     print(f"✅ 새로운 scene 저장 완료: {out_path}")
+
+def create_all_bumps(base_scene_path, output_scene_path, bump_config):
+    bump_dir = Path("models/speed_bumps")
+    bump_dir.mkdir(parents=True, exist_ok=True)
+
+    existing_names = set(p.name for p in bump_dir.glob("*.stl"))
+
+    mesh_tags = []
+    body_tags = []
+
+    counter = 1
+    generated = 0
+
+    while generated < bump_config.num_bumps:
+
+        if generated >199:
+            break
+
+        a = np.round(np.random.uniform(*bump_config.a_range), 2)
+        b = np.round(np.random.uniform(*bump_config.b_range), 3)
+        h = np.round(np.random.uniform(*bump_config.h_range), 2)
+
+        filename = f"{counter:03}.stl"
+        filepath = bump_dir / filename
+
+        if filename in existing_names:
+            counter += 1  # ✅ 다음 번호로 넘어가야 함
+            continue
+
+        faces = create_speed_bump(a, b, h, bump_config.segments)
+        save_mesh_to_stl(faces, bump_dir, filename)
+        print(f"[Generated] {filename}")
+
+        mesh_tags.append(tag_mesh(filepath, Path(output_scene_path)))
+        body_tags.append(tag_body(filepath, (0, 0, 0), bump_config))
+
+        existing_names.add(filename)
+        generated += 1
+        counter += 1
+
+    # base XML에 태그 삽입
+    with open(base_scene_path, "r", encoding="utf-8") as f:
+        xml = f.read()
+
+    xml = xml.replace("<asset>", "<asset>\n" + "".join(mesh_tags))
+    xml = xml.replace("</worldbody>", "".join(body_tags) + "    </worldbody>")
+
+    with open(output_scene_path, "w", encoding="utf-8") as f:
+        f.write(xml)
+
+    print(f"✅ XML 저장 완료: {output_scene_path}")

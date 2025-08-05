@@ -1,13 +1,18 @@
 # scripts/setup.py
 
-from utils import create_new_scene, BumpConfig
+from utils import create_all_bumps, BumpConfig
 
 def main():
-    # Config 설정
-    bump_cfg = BumpConfig()
+    bump_cfg = BumpConfig(
+        num_bumps=200  # STL 개수 늘림
+    )
 
-    # Bump 생성 
-    create_new_scene("models/scenes/base_scene.xml", "models/scenes/new_scene.xml", bump_cfg)
+    # 전체 bump STL 및 XML 반영 준비
+    create_all_bumps(
+        base_scene_path="models/scenes/base_scene.xml",
+        output_scene_path="models/scenes/new_scene.xml",
+        bump_config=bump_cfg
+    )
 
 if __name__ == "__main__":
     main()

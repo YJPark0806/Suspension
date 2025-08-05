@@ -1,13 +1,19 @@
 # scripts/VehicleEnv.py
 
 import os
+import random
+import mujoco
 import numpy as np
+
+from pathlib import Path
 from gym import utils
 from gym.spaces import Box
 from gym.envs.mujoco import MujocoEnv
+from mujoco import MjModel, MjData
+
 
 from utils import PIDController, compose_control, compute_suspension_forces
-from utils import get_dual_lidar_scan
+from utils import get_dual_lidar_scan, tag_mesh, tag_body
 
 class VehicleEnv(MujocoEnv, utils.EzPickle):
 
@@ -23,6 +29,12 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
 
     def __init__(self, **kwargs):
         
+        # 작업 디렉토리를 프로젝트 루트로 변경 (XML include 경로 문제 해결)
+        current_dir = os.getcwd()
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(script_dir)  # scripts의 상위 디렉토리
+        os.chdir(project_root)
+        
         observation_space = Box(
             low=-np.inf,
             high=np.inf,
@@ -32,13 +44,20 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         self.action_space = Box(low=-150.0, high=150.0, shape=(4,), dtype=np.float32)
 
         xml_path = os.path.abspath("models/scenes/new_scene.xml")
+        self.base_scene_path = xml_path
+        self.bump_dir = Path("models/speed_bumps/")
+        self.bump_stl_files = sorted(self.bump_dir.glob("*.stl"))
+        assert len(self.bump_stl_files) > 0, "STL bump 파일이 존재하지 않습니다."
+
 
         MujocoEnv.__init__(self, 
                            xml_path, 
                            frame_skip=5,
                            observation_space=observation_space,
-                           **kwargs
-                           )
+                           **kwargs)
+        
+        # 원래 작업 디렉토리로 복원
+        os.chdir(current_dir)
         utils.EzPickle.__init__(self,**kwargs)
 
         self.speed_pid = PIDController(kp=150.0, ki=1.0, kd=10.0, output_limits=(-2000, 2000))
@@ -108,6 +127,27 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         10    | rl_wheel           | hinge   | 뒤왼쪽 바퀴 회전각
         11    | rr_wheel           | hinge   | 뒤오른쪽 바퀴 회전각
         """
+
+        mesh_names = [f"{i:03}" for i in range(1, 201)]
+        chosen_name = random.choice(mesh_names)
+
+        # debug
+        mesh_id = self.model.mesh(name=chosen_name).id
+        vert_adr = self.model.mesh_vertadr[mesh_id]
+        vert_num = self.model.mesh_vertnum[mesh_id]
+        print(f"[Debug] STL {chosen_name} has {vert_num} vertices (starts at address {vert_adr})")
+
+        # bump_geom이라는 이름의 geom을 찾아서 그 mesh를 교체
+        geom_id = self.model.geom("bump_geom").id
+        mesh_id = self.model.mesh(chosen_name).id
+
+        # MuJoCo에서 geom이 mesh를 참조할 때는:
+        # 1. geom_type = 5 (mjGEOM_MESH)
+        # 2. geom_dataid = mesh_id
+        self.model.geom_type[geom_id] = mujoco.mjtGeom.mjGEOM_MESH
+        self.model.geom_dataid[geom_id] = mesh_id
+
+        mujoco.mj_setConst(self.model, self.data)
 
         nq = self.model.nq
         nv = self.model.nv
