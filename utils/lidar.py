@@ -39,7 +39,7 @@ def get_lidar_scan(model, data, site_name, num_rays=30, max_dist=5.0):
             geomgroup, flg_static, bodyexclude, geomid
         )
         scan[i] = dist if geomid[0] != -1 else max_dist
-    print(scan)
+    #print(scan)
     return scan
 
 
