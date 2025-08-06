@@ -127,49 +127,42 @@ def create_all_bumps(base_scene_path, output_scene_path, bump_config):
     bump_dir = Path("models/speed_bumps")
     bump_dir.mkdir(parents=True, exist_ok=True)
 
+    # 기존 STL 파일들 확인
     existing_names = set(p.name for p in bump_dir.glob("*.stl"))
 
     mesh_tags = []
-    body_tags = []
+    # body_tags는 사용하지 않음 - base_scene.xml에 이미 bump_geom 포함됨
 
-    counter = 1
-    generated = 0
-
-    while generated < bump_config.num_bumps:
-
-        if generated >199:
-            break
-
-        a = np.round(np.random.uniform(*bump_config.a_range), 2)
-        b = np.round(np.random.uniform(*bump_config.b_range), 3)
-        h = np.round(np.random.uniform(*bump_config.h_range), 2)
-
-        filename = f"{counter:03}.stl"
+    # 1부터 200까지 체크
+    for i in range(1, 201):
+        filename = f"{i:03}.stl"
         filepath = bump_dir / filename
+        
+        # STL 파일이 없으면 생성
+        if filename not in existing_names:
+            a = np.round(np.random.uniform(*bump_config.a_range), 2)
+            b = np.round(np.random.uniform(*bump_config.b_range), 3)
+            h = np.round(np.random.uniform(*bump_config.h_range), 2)
 
-        if filename in existing_names:
-            counter += 1  # ✅ 다음 번호로 넘어가야 함
-            continue
-
-        faces = create_speed_bump(a, b, h, bump_config.segments)
-        save_mesh_to_stl(faces, bump_dir, filename)
-        print(f"[Generated] {filename}")
-
+            faces = create_speed_bump(a, b, h, bump_config.segments)
+            save_mesh_to_stl(faces, bump_dir, filename)
+            print(f"[Generated] {filename}")
+        else:
+            print(f"[Skipped] {filename} already exists")
+        
+        # 파일이 있든 없든 mesh 태그는 항상 추가 (1-200번)
         mesh_tags.append(tag_mesh(filepath, Path(output_scene_path)))
-        body_tags.append(tag_body(filepath, (0, 0, 0), bump_config))
 
-        existing_names.add(filename)
-        generated += 1
-        counter += 1
-
-    # base XML에 태그 삽입
+    # base XML에 mesh 태그만 삽입 (body 태그는 이미 base_scene에 있음)
     with open(base_scene_path, "r", encoding="utf-8") as f:
         xml = f.read()
 
     xml = xml.replace("<asset>", "<asset>\n" + "".join(mesh_tags))
-    xml = xml.replace("</worldbody>", "".join(body_tags) + "    </worldbody>")
+    # worldbody는 수정하지 않음 - base_scene.xml에 이미 완성된 구조 포함
 
     with open(output_scene_path, "w", encoding="utf-8") as f:
         f.write(xml)
 
     print(f"✅ XML 저장 완료: {output_scene_path}")
+    print(f"✅ 1-200번 mesh 태그만 추가됨")
+    print(f"✅ worldbody는 base_scene.xml에서 그대로 복사됨")
