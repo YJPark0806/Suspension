@@ -141,13 +141,42 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         geom_id = self.model.geom("bump_geom").id
         mesh_id = self.model.mesh(chosen_name).id
 
+        # 더 명확한 색상 변화를 위해 미리 정의된 색상 중에서 선택
+        predefined_colors = [
+            [1.0, 0.0, 0.0, 1.0],  # 빨강
+            [0.0, 1.0, 0.0, 1.0],  # 초록
+            [0.0, 0.0, 1.0, 1.0],  # 파랑
+            [1.0, 1.0, 0.0, 1.0],  # 노랑
+            [1.0, 0.0, 1.0, 1.0],  # 마젠타
+            [0.0, 1.0, 1.0, 1.0],  # 시안
+            [1.0, 0.5, 0.0, 1.0],  # 주황
+            [0.5, 0.0, 1.0, 1.0],  # 보라
+            [1.0, 0.5, 0.5, 1.0],  # 연한 빨강
+            [0.5, 1.0, 0.5, 1.0],  # 연한 초록
+        ]
+        
+        selected_color = predefined_colors[int(chosen_name) % len(predefined_colors)]
+        print(f"[Debug] Setting color to: R={selected_color[0]:.1f}, G={selected_color[1]:.1f}, B={selected_color[2]:.1f}")
+
+        # 색상 설정
+        self.model.geom_rgba[geom_id] = selected_color
+
         # MuJoCo에서 geom이 mesh를 참조할 때는:
         # 1. geom_type = 5 (mjGEOM_MESH)
         # 2. geom_dataid = mesh_id
         self.model.geom_type[geom_id] = mujoco.mjtGeom.mjGEOM_MESH
         self.model.geom_dataid[geom_id] = mesh_id
 
+        # 모델 상수 재계산
         mujoco.mj_setConst(self.model, self.data)
+        
+        # 데이터 재설정
+        mujoco.mj_resetData(self.model, self.data)
+        
+        # 물리 시뮬레이션 한 스텝 실행하여 변경사항 적용
+        mujoco.mj_step(self.model, self.data)
+        
+        print(f"[Debug] Mesh and color change completed for STL {chosen_name}")
 
         nq = self.model.nq
         nv = self.model.nv
