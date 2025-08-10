@@ -46,8 +46,8 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         xml_path = os.path.abspath("models/scenes/new_scene.xml")
         self.base_scene_path = xml_path
         self.bump_dir = Path("models/speed_bumps/")
-        self.bump_stl_files = sorted(self.bump_dir.glob("*.stl"))
-        assert len(self.bump_stl_files) > 0, "STL bump 파일이 존재하지 않습니다."
+        self.bump_obj_files = sorted(self.bump_dir.glob("*.obj"))
+        assert len(self.bump_obj_files) > 0, "OBJ bump 파일이 존재하지 않습니다."
 
 
         MujocoEnv.__init__(self, 
@@ -135,7 +135,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         mesh_id = self.model.mesh(name=chosen_name).id
         vert_adr = self.model.mesh_vertadr[mesh_id]
         vert_num = self.model.mesh_vertnum[mesh_id]
-        print(f"[Debug] STL {chosen_name} has {vert_num} vertices (starts at address {vert_adr})")
+        print(f"[Debug] OBJ {chosen_name} has {vert_num} vertices (starts at address {vert_adr})")
 
         # bump_geom이라는 이름의 geom을 찾아서 그 mesh를 교체
         geom_id = self.model.geom("bump_geom").id
@@ -176,7 +176,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         # 물리 시뮬레이션 한 스텝 실행하여 변경사항 적용
         mujoco.mj_step(self.model, self.data)
         
-        print(f"[Debug] Mesh and color change completed for STL {chosen_name}")
+        print(f"[Debug] Mesh and color change completed for OBJ {chosen_name}")
 
         nq = self.model.nq
         nv = self.model.nv

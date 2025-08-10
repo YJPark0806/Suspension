@@ -14,7 +14,7 @@
         <!-- ✅ 차량 소환 위치 지정 -->
         <body name="vehicle" pos="0 0 0" />
         <body name="bump" pos="0 0 0">
-            <geom name="bump_geom" type="mesh" mesh="001" size="1 1 1" euler="0 0 0" />
+            <geom name="bump_geom" type="mesh" mesh="001" size="1 1 1" />
         </body>
     </worldbody>
 </mujoco>
