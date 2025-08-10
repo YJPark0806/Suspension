@@ -51,11 +51,17 @@ def test():
             # # PPO 모델로부터 액션 예측
             # action, _ = model.predict(obs, deterministic=True)
 
-            # Case 1 : All +100
-            #action = [150, 150, 150, 150]
+            # Case 1 : All +12000
+            # action = [12000, 12000, 12000, 12000]
 
-            # Case 2 : All -100
-            action = [-150, -150, -150, -150]
+            # Case 2 : All -12000
+            action = [-12000, -12000, -12000, -12000]
+
+            # Case 3
+            # if step_count > 150:
+            #     action = [12000, 12000, 12000, 12000]
+            # else:
+            #     action = [-12000, -12000, -12000, -12000]
 
             # 환경 스텝
             obs, reward, terminated, truncated, info = env.step(action)

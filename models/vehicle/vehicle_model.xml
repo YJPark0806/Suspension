@@ -103,9 +103,9 @@
     <motor name="rl_motor" joint="rl_wheel" ctrlrange="-10 10" gear="1.0"/>
     <motor name="rr_motor" joint="rr_wheel" ctrlrange="-10 10" gear="1.0"/>
 
-    <general name="fl_spring" joint="fl_suspension" gainprm="0 0 0" biasprm="0 35000 1000"/>
-    <general name="fr_spring" joint="fr_suspension" gainprm="0 0 0" biasprm="0 35000 1000"/>
-    <general name="rl_spring" joint="rl_suspension" gainprm="0 0 0" biasprm="0 38000 1100"/>
-    <general name="rr_spring" joint="rr_suspension" gainprm="0 0 0" biasprm="0 38000 1100"/>
+    <motor name="fl_act" joint="fl_suspension" gear="1.0" ctrlrange="-12000 12000"/>
+    <motor name="fr_act" joint="fr_suspension" gear="1.0" ctrlrange="-12000 12000"/>
+    <motor name="rl_act" joint="rl_suspension" gear="1.0" ctrlrange="-12000 12000"/>
+    <motor name="rr_act" joint="rr_suspension" gear="1.0" ctrlrange="-12000 12000"/>
   </actuator>
 </mujoco>
