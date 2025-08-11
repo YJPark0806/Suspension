@@ -153,7 +153,7 @@ class VehicleEnv(MujocoEnv, utils.EzPickle):
         # weights
         w1 = 1
         w2 = 1
-        w3 = 1
+        w3 = 0.01
 
         #   reward = -(roll̇² + pitcḣ² + a_z²)
         reward = - w1 * roll_rate ** 2 - w2 * pitch_rate ** 2 - w3 * vert_acc ** 2
